@@ -27,7 +27,7 @@ class PaymentAnalyzer:
                 days_from_suspension = delta.days
             result_list.append({'device_id': device_id, 'days_from_suspension': days_from_suspension})
 
-        return result_list
+        return sorted(result_list, key=lambda k: k['days_from_suspension'], reverse=True)
 
     def handle(self, data, result_directory):
         days_from_suspension_result = self.handle_days_from_suspension(data)
