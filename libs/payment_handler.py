@@ -1,8 +1,6 @@
 import datetime
-import collections
 
 from libs.csv_handler import CSVHandler
-from libs.utils import fake_now
 
 
 class PaymentAnalyzer:
@@ -22,10 +20,9 @@ class PaymentAnalyzer:
                 payment_date = datetime.datetime.strptime(payment['created'], '%Y-%m-%d %H:%M:%S')
                 if payment_date > latest_successful_date and payment['status'] == 'SUCCESSFUL':
                     latest_successful_date = payment_date
-            #  TODO CHANGE to datetime.datetime.now()
             days_from_suspension = 0
-            if latest_successful_date + datetime.timedelta(days=90) > fake_now():
-                delta = (latest_successful_date + datetime.timedelta(days=90)) - fake_now()
+            if latest_successful_date + datetime.timedelta(days=90) > datetime.datetime.now():
+                delta = (latest_successful_date + datetime.timedelta(days=90)) - datetime.datetime.now()
                 days_from_suspension = delta.days
             result_list.append({'device_id': device_id, 'days_from_suspension': days_from_suspension})
 
