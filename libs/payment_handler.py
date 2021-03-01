@@ -35,6 +35,7 @@ class PaymentAnalyzer:
         data = input_data.copy()
         agent_user_id_list = sorted(list(set(item['agent_user_id'] for item in data)))
         result_list = []
+
         for agent_user_id in agent_user_id_list:
             payment_type_date_amount_list = []
             payment_type_user_agent_set = set()
@@ -76,6 +77,29 @@ class PaymentAnalyzer:
 
         return result_list
 
+    def handle_payment_type(self, input_data):
+        data = input_data.copy()
+        payment_type_list = sorted(list(set(item['payment_type'] for item in data)))
+        result_list = []
+
+        for payment_type in payment_type_list:
+            total_amount = 0
+            while True:
+                payment = next((item for item in data if item['payment_type'] == payment_type), None)
+                if payment is not None:
+                    data.remove(payment)
+                else:
+                    break
+                if payment['status'] == 'SUCCESSFUL':
+                    total_amount += int(payment['payment_amount'])
+
+            result_list.append({
+                'payment_type': payment_type,
+                'total_amount': total_amount
+            })
+
+        return sorted(result_list, key=lambda k: k['payment_type'])
+
     def handle(self, data, result_directory):
         days_from_suspension_result = self.handle_days_from_suspension(data)
         CSVHandler.write('days_from_suspension_report.csv', f'results/{result_directory}',
@@ -84,3 +108,7 @@ class PaymentAnalyzer:
         agent_collection_result = self.handle_agent_collection(data)
         CSVHandler.write('agent_collection_report.csv', f'results/{result_directory}',
                          agent_collection_result)
+
+        payment_type_result = self.handle_payment_type(data)
+        CSVHandler.write('payment_type_report.csv', f'results/{result_directory}',
+                         payment_type_result)
