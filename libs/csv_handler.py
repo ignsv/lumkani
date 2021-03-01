@@ -20,7 +20,7 @@ class CSVHandler:
     @classmethod
     def read(cls, filepath):
         input_data = []
-        with open('inputs/{}'.format(filepath), newline='') as csvfile:
+        with open(filepath, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 input_data.append(row)
