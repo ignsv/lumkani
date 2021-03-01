@@ -37,14 +37,14 @@ class PaymentAnalyzer:
         result_list = []
         for agent_user_id in agent_user_id_list:
             payment_type_date_amount_list = []
-            payment_date_set = set()
+            payment_type_user_agent_set = set()
             while True:
                 payment = next((item for item in data if item['agent_user_id'] == agent_user_id), None)
                 if payment is not None:
                     data.remove(payment)
                 else:
                     break
-                sorted(list(payment_date_set.add(str(datetime.datetime.strptime(payment['created'], '%Y-%m-%d %H:%M:%S').date()))))
+                payment_type_user_agent_set.add(payment['payment_type'])
                 payment_type_date_amount_list.append(
                     {
                         'payment_type': payment['payment_type'],
@@ -54,23 +54,26 @@ class PaymentAnalyzer:
                     }
                 )
 
-            for payment_date in payment_date_set:
+            payment_type_total_amount_by_date_list = []
+            for payment_type in payment_type_user_agent_set:
                 date_amount_dict = dict()
                 for item in payment_type_date_amount_list:
-                    if item['date'] == payment_date and item['status'] == 'SUCCESSFUL':
+                    if item['payment_type'] == payment_type and item['status'] == 'SUCCESSFUL':
                         if item['date'] not in date_amount_dict:
                             date_amount_dict[item['date']] = int(item['payment_amount'])
                         else:
                             date_amount_dict[item['date']] += int(item['payment_amount'])
 
-                ordered_amount_by_date = collections.OrderedDict(sorted(date_amount_dict.items()))
-                for key, value in ordered_amount_by_date.items():
-                    result_list.append({
+                for key, value in date_amount_dict.items():
+                    payment_type_total_amount_by_date_list.append({
                         'agent_user_id': agent_user_id,
                         'date': key,
                         'payment_type': payment_type,
                         'total_amount': value
                     })
+            for item in sorted(payment_type_total_amount_by_date_list, key=lambda k: k['date']):
+                result_list.append(item)
+
         return result_list
 
     def handle(self, data, result_directory):
